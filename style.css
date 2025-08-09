@@ -38,8 +38,8 @@ body{
 }
 
 .board{
-    display: flex;
-    width: 780px;
+    display: grid;
+    grid-template-columns: repeat(36, 20px);
     flex-wrap: wrap;
     box-sizing: border-box;
 }
