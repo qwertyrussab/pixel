@@ -8,9 +8,76 @@
     <script src="./script.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js" integrity="sha512-aNMyYYxdIxIaot0Y1/PLuEu3eipGCmsEUBrUq+7aVyPGMFH8z0eTP0tkqAvv34fzN6z+201d3T8HPb1svWSKHQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script></head>
-
+    <script src="scriptanime.js" defer></script>
 <body>
-    <button class="btn_start">давайте рисовать</button>
+
+    <canvas id="myCanvas"></canvas>
+
+<script id="fragment-shader-2d" type="x-shader/x-fragment">
+
+#version 300 es
+
+precision highp float;
+
+uniform vec2 iResolution;
+uniform vec2 iMouse;
+uniform float iTime;
+
+out vec4 fragColor;
+
+#define PI 3.14159265359
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+  vec2 uv = (fragCoord - iResolution.xy/2.)/iResolution.y;
+
+  vec2 uv0 = uv; // initial uv value is stored before any modifications are made, serving as a reset point
+
+  float scale = 25.; // scale of the grid (25 cells in a vertical column - and in the horizontal axis it's scaled in accordance with the screeen's aspect ratio)
+
+  uv = round(uv*scale)/scale; // all values in the grid are rounded up or down from the scaled down threshold 
+
+  float m = .15; // radius of a circle that'll be the basis for the modulo
+
+  float angle = atan(uv.x,uv.y) + iTime; // phi - the angle of a point in relation to the center of the coordinate system
+
+  float r = m/PI*angle; // radius of a single serpentine segment (360deg), dependent on the phi
+
+  uv.x = length(uv.xy) - r; // a straight vertical line will now be interpreted as a circle with an angle-deprendent radius (a single segment of a spiral)
+
+  uv.x = mod(uv.x - m,2.*m) - m; // modulo is applied to create infinite serpentine pattern 
+
+  float stripe = abs(uv.x)/m - m;  // the actual serpentine is drawn; if we used this as our final fragColor, it would look heavily pixelated
+  stripe-=.25; // ...and now we darked the value
+
+  uv = uv0; // reset to original uv values
+
+  uv = mod(uv - 1./scale/2., 1./scale) - 1./scale/2.; // we now use modulo identical to the grid of rounded values
+
+  float circle = step(length(uv), max(sqrt(m*stripe/scale/2.), .003)); // now a circle is drawn in every cell of the grid - and with a radius of .003 at its smallest, then rapidly growing past the size of the cell, but still confined to it, which makes it look like a quare
+
+  uv = uv0;
+
+  float row = round(uv.x*scale); // all values in the grid are assigned the value of the vertical column they're in
+  float ln = round(uv.y*scale); // all values in the grid are assigned the value of the horizontal line they're in
+
+  float sum = mod(mod(row, 3.) + mod(ln,2.) + mod(row - ln, 5.) * mod(row*ln, 3.),4.); // the vertical and horizontal values are smashed together in various combinations and filtered through modulo, resulting in a random-looking jumble of colors
+
+  vec3 col; // placeholder for color values
+
+  if (sum == 0.) col = vec3(1.); // if the ultmate modulo is 0. then the color is white
+  if (sum == 1.) col = vec3(1, .75, 0); // if 1. - it's yellow
+  if (sum == 2.) col = vec3(0, .5, .75); // if 2. - it's blue
+  if (sum == 3.) col = vec3(1, .25, 0); // if 3. - it's tomato red
+
+  fragColor = vec4(vec3(circle*col), 1); // a pixelated serpentine is drawn - but instead of distinct shades of gray, pulsating dots represent darkening or brightening cells. 
+}
+
+void main() {
+    mainImage(fragColor, gl_FragCoord.xy);
+}
+</script>
+    
+    <!-- <button class="btn_start">давайте рисовать</button> -->
     <div class="canvas">
         <div class="buttons">
             <input class="color" type="color" value="#000000">

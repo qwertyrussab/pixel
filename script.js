@@ -26,8 +26,12 @@
         isErasing = true
     })
 
-    btn_start.addEventListener('click', function(){
-        btn_start.style.display = 'none'
+    let canvas_animation = document.querySelector('#myCanvas')
+
+    body.addEventListener('click', function(){
+        canvas_animation.style.display = 'none'
+        const script = document.querySelector('script[src="scriptanime.js"]');
+        if (script) script.remove();
         canvas.style.display = 'flex'
             createBoard()
             anime({
