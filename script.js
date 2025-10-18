@@ -119,3 +119,8 @@
         })
         localStorage.setItem('pixel', JSON.stringify(cell_colors))
     })
+
+    document.addEventListener('click', function (e){
+        console.log(e.pageX)
+        
+    })

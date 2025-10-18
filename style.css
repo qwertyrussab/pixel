@@ -116,6 +116,13 @@ body{
     grid-template-rows: repeat(36, 15px);
     grid-template-columns: repeat(25, 15px);
     }
+
+    .cell{
+    width: 15px;
+    height: 15px;
+    border: 1px solid black;
+    }
+
 }
 
 @media (min-width:768px) and (max-width:991px){
